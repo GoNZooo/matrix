@@ -54,4 +54,4 @@
 (module+ main
   (require racket/pretty)
   (pretty-print
-    (map room/states (initial-sync/rooms (get/initial-sync #:limit 2)))))
+    (initial-sync/rooms (get/initial-sync #:limit 2))))

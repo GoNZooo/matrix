@@ -1,4 +1,4 @@
-src/credentials.rkt
-src/db-credentials.rkt
+src/matrix-api/credentials.rkt
+src/db/credentials.rkt
 cache/*
 db/*
