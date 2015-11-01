@@ -7,13 +7,7 @@
 
          "credentials.rkt"
          "urls.rkt"
-         "login.rkt"
-         "messages.rkt"
-         "chunk.rkt"
-         "power-levels.rkt"
-         "presence.rkt"
-         "room.rkt"
-         "state.rkt")
+         "login.rkt")
 
 (define user-info (get/user-info))
 
