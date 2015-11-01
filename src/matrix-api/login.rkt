@@ -73,8 +73,4 @@
       data)))
 
 (module+ main
-  (define ui (get/user-info))
-
-  (user-info/access-token ui)
-  (user-info/home-server ui)
-  (user-info/user-id ui))
+  (get/user-info))
