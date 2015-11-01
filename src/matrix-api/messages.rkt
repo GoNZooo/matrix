@@ -1,8 +1,20 @@
 #lang racket/base
 
+(require "chunk.rkt")
+
+(provide (struct-out messages))
+(struct messages (start end chunks)
+        #:transparent)
+
+(provide jsexpr->messages)
+(define (jsexpr->messages js)
+  (messages (message/start js)
+            (message/end js)
+            (message/chunks js)))
+
 (provide message/chunks)
 (define (message/chunks js)
-  (hash-ref js 'chunk #f))
+  (map jsexpr->chunk (hash-ref js 'chunk #f)))
 
 (provide message/start)
 (define (message/start js)

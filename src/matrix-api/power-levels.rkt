@@ -1,5 +1,27 @@
 #lang racket/base
 
+(provide (struct-out content/power-levels))
+(struct content/power-levels (ban events events-default invite kick redact
+                                  state-default users users-default)
+        #:transparent)
+
+(provide (struct-out power-level/user))
+(struct power-level/user (id power-level)
+        #:transparent)
+
+(provide jsexpr->content/power-levels)
+(define (jsexpr->content/power-levels js)
+  (content/power-levels (power-levels/ban js)
+                        (power-levels/events js)
+                        (power-levels/events-default js)
+                        (power-levels/invite js)
+                        (power-levels/kick js)
+                        (power-levels/redact js)
+                        (power-levels/state-default js)
+                        (for/list ([(key val) (power-levels/users js)])
+                          (power-level/user key val))
+                        (power-levels/users-default js)))
+
 (provide power-levels/ban)
 (define (power-levels/ban js)
   (hash-ref js 'ban #f))

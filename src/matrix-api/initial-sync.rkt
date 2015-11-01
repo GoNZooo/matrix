@@ -10,7 +10,9 @@
          "db-interface.rkt"
          "urls.rkt"
          "login.rkt"
-         "room.rkt")
+         "room.rkt"
+         "messages.rkt"
+         "presence.rkt")
 
 (define user-info (get/user-info))
 
@@ -32,6 +34,18 @@
 
   (read-json input-port))
 
+(struct initial-sync (end rooms presences receipts)
+        #:transparent)
+
+(provide jsexpr->initial-sync)
+(define (jsexpr->initial-sync js)
+  (initial-sync (initial-sync/end js)
+                (map jsexpr->room
+                     (initial-sync/rooms js))
+                (map jsexpr->presence
+                     (initial-sync/presences js))
+                (initial-sync/receipts js)))
+
 (provide initial-sync/presences)
 (define (initial-sync/presences js)
   (hash-ref js 'presence #f))
@@ -39,22 +53,6 @@
 (provide initial-sync/rooms)
 (define (initial-sync/rooms js)
   (hash-ref js 'rooms #f))
-
-(define (db/write/rooms rooms)
-  (for-each
-    (lambda (room)
-      (call-with-transaction
-        db-conn
-        (lambda ()
-          (query-exec
-            db-conn
-            "REPLACE INTO rooms values ($1,$2,$3)"
-            (room/room-id room)
-            (room/membership room)
-            (room/visibility room)))
-        #:option 'immediate
-        #:isolation 'read-uncommitted))
-    rooms))
 
 (provide initial-sync/end)
 (define (initial-sync/end js)
@@ -67,4 +65,4 @@
 (module+ main
   (require racket/pretty)
   (pretty-print
-    (db/write/rooms (initial-sync/rooms (get/initial-sync #:limit 2)))))
+    (jsexpr->initial-sync (get/initial-sync #:limit 10))))

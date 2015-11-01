@@ -1,5 +1,47 @@
 #lang racket/base
 
+(require "power-levels.rkt")
+
+(provide (struct-out state))
+(struct state (type age user-id room-id content event-id origin-server-ts
+                    state-key)
+        #:transparent)
+
+(provide (struct-out content/join-rules))
+(struct content/join-rules (join-rule)
+        #:transparent)
+
+(provide (struct-out content/room-member))
+(struct content/room-member (avatar-url displayname membership replaces-state)
+        #:transparent)
+
+(provide (struct-out content/room-name))
+(struct content/room-name (name)
+        #:transparent)
+
+(provide (struct-out content/history-visibility))
+(struct content/history-visibility (history-availability)
+        #:transparent)
+
+(provide (struct-out content/room-create))
+(struct content/room-create (creator)
+        #:transparent)
+
+(provide (struct-out content/room-topic))
+(struct content/room-topic (topic)
+        #:transparent)
+
+(provide jsexpr->state)
+(define (jsexpr->state js)
+  (state (state/type js)
+         (state/age js)
+         (state/user-id js)
+         (state/room-id js)
+         (state/content js) 
+         (state/event-id js)
+         (state/origin-server-ts js)
+         (state/state-key js)))
+
 (provide state/type)
 (define (state/type js)
   (hash-ref js 'type #f))
@@ -10,7 +52,32 @@
 
 (provide state/content)
 (define (state/content js)
-  (hash-ref js 'content #f))
+  (case (state/type js)
+    [("m.room.join_rules")
+     (content/join-rules
+       (state/content/join-rules/join-rule (hash-ref js 'content #f)))]
+    [("m.room.member")
+     (content/room-member
+       (state/content/room-member/avatar-url (hash-ref js 'content #f))
+       (state/content/room-member/displayname (hash-ref js 'content #f))
+       (state/content/room-member/membership (hash-ref js 'content #f))
+       (state/content/room-member/replaces-state (hash-ref js 'content #f)))]
+    [("m.room.name")
+     (content/room-name
+       (state/content/room-name/name (hash-ref js 'content #f)))]
+    [("m.room.create")
+     (content/room-create
+       (state/content/room-create/creator (hash-ref js 'content #f)))]
+    [("m.room.topic")
+     (content/room-topic
+       (state/content/room-topic/topic (hash-ref js 'content #f)))]
+    [("m.room.power_levels")
+     (jsexpr->content/power-levels (hash-ref js 'content #f))]
+    [("m.room.history_visibility")
+     (content/room-topic
+       (state/content/history-visibility/history-visibility
+         (hash-ref js 'content #f)))]
+    [else (hash-ref js 'content #f)]))
 
 (provide state/content/join-rules/join-rule)
 (define (state/content/join-rules/join-rule js)
@@ -36,9 +103,9 @@
 (define (state/content/room-name/name js)
   (hash-ref js 'name #f))
 
-(provide state/content/room-history-availability/history-availability)
-(define (state/content/room-history-availability/history-availability js)
-  (hash-ref js 'history_availabiliy #f))
+(provide state/content/history-visibility/history-visibility)
+(define (state/content/history-visibility/history-visibility js)
+  (hash-ref js 'history_visibility #f))
 
 (provide state/content/room-create/creator)
 (define (state/content/room-create/creator js)
