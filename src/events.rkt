@@ -17,7 +17,7 @@
                     [token (user-info/access-token user-info)]
                     #:host [host credentials/host]
                     #:port [port credentials/port]
-                    #:timeout [timeout "10"]
+                    #:timeout [timeout "1"]
                     #:from [from (db/get/end)]
                     #:auto-state-update [state-update? #t])
   (define-values (response headers input-port)
@@ -62,5 +62,5 @@
   (require racket/pretty)
 
   (pretty-print 
-    (db/get/end)))
+    (get/events)))
 
