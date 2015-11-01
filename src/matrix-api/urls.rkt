@@ -8,3 +8,6 @@
 
 (provide url/events)
 (define url/events "/_matrix/client/api/v1/events")
+
+(provide url/send/message)
+(define url/send/message "/_matrix/client/api/v1/rooms/~a/send/m.room.message")
