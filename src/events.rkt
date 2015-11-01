@@ -56,11 +56,11 @@
     db-conn
     (lambda ()
       (query-exec db-conn "UPDATE end SET key = $1" key))
-    #:isolation 'exclusive))
+    #:option 'immediate))
 
 (module+ main
   (require racket/pretty)
 
   (pretty-print 
-    (get/events)))
+    (db/get/end)))
 
