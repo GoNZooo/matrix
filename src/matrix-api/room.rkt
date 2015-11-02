@@ -46,6 +46,7 @@
         '()
         '()))
 
+(provide db/read/rooms)
 (define (db/read/rooms)
   (map db-row->room
        (call-with-transaction

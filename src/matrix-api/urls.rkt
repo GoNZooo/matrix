@@ -9,5 +9,9 @@
 (provide url/events)
 (define url/events "/_matrix/client/api/v1/events")
 
-(provide url/send/message)
-(define url/send/message "/_matrix/client/api/v1/rooms/~a/send/m.room.message")
+(provide url/send/message/id)
+(define url/send/message/id
+  "/_matrix/client/api/v1/rooms/~a/send/m.room.message")
+
+(provide url/add/alias)
+(define url/add/alias "/_matrix/client/api/v1/directory/room/~a")
