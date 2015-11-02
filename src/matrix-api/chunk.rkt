@@ -1,8 +1,9 @@
 #lang racket/base
 
 (require
+  (only-in "state-structs.rkt"
+           content/room-member)
   (only-in "state.rkt"
-           content/room-member
            [state/content/room-member/avatar-url
              chunk/content/room-member/avatar-url] 
            [state/content/room-member/displayname

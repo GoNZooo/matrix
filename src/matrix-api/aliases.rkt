@@ -35,4 +35,4 @@
 
   (define rooms (db/read/rooms))
   (put/room/alias/id (room-room-id (car rooms))
-                     "#api-test:severnatazvezda.com"))
+                     "#test:severnatazvezda.com"))

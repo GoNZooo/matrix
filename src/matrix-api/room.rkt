@@ -4,11 +4,8 @@
          
          "db-interface.rkt"
          "messages.rkt"
-         "state.rkt")
-
-(provide (struct-out room))
-(struct room (room-id membership visibility states messages)
-        #:transparent)
+         "state.rkt"
+         "room-structs.rkt")
 
 (provide jsexpr->room)
 (define (jsexpr->room js)
@@ -87,5 +84,7 @@
   (require racket/pretty)
 
   (pretty-print
-    (db/read/rooms)))
+    (set/state/room/id (room-room-id (car (db/read/rooms)))
+                       "m.room.dictator"
+                       '#hash((dictator . "gonz")))))
 

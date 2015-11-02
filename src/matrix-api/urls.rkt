@@ -15,3 +15,9 @@
 
 (provide url/add/alias)
 (define url/add/alias "/_matrix/client/api/v1/directory/room/~a")
+
+(provide url/set/state/state-key)
+(define url/set/state/state-key "/_matrix/client/api/v1/rooms/~a/state/~a/~a")
+
+(provide url/set/state/no-state-key)
+(define url/set/state/no-state-key "/_matrix/client/api/v1/rooms/~a/state/~a")

@@ -12,7 +12,8 @@
          "login.rkt"
          "room.rkt"
          "messages.rkt"
-         "presence.rkt")
+         "presence.rkt"
+         "events.rkt")
 
 (define user-info (get/user-info))
 
@@ -21,7 +22,7 @@
                           #:host [host credentials/host]
                           #:port [port credentials/port]
                           #:limit [limit "1"]
-                          #:cache [cache? #t])
+                          #:auto-state-update [state-update? #t])
   (define-values (response headers input-port)
     (http-sendrecv host
                    (string-append url/initial-sync
@@ -32,7 +33,10 @@
                    #:ssl? #t
                    #:method "GET"))
 
-  (read-json input-port))
+  (define sync-data (jsexpr->initial-sync (read-json input-port)))
+  (when state-update?
+    (db/set/end (initial-sync-end sync-data)))
+  sync-data)
 
 (struct initial-sync (end rooms presences receipts)
         #:transparent)
@@ -65,4 +69,4 @@
 (module+ main
   (require racket/pretty)
   (pretty-print
-    (jsexpr->initial-sync (get/initial-sync #:limit 10))))
+    (get/initial-sync #:limit 10)))

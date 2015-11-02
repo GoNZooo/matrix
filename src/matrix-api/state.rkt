@@ -1,35 +1,15 @@
 #lang racket/base
 
-(require "power-levels.rkt")
+(require net/http-client
+         net/url
+         net/uri-codec
+         json
 
-(provide (struct-out state))
-(struct state (type age user-id room-id content event-id origin-server-ts
-                    state-key)
-        #:transparent)
-
-(provide (struct-out content/join-rules))
-(struct content/join-rules (join-rule)
-        #:transparent)
-
-(provide (struct-out content/room-member))
-(struct content/room-member (avatar-url displayname membership replaces-state)
-        #:transparent)
-
-(provide (struct-out content/room-name))
-(struct content/room-name (name)
-        #:transparent)
-
-(provide (struct-out content/history-visibility))
-(struct content/history-visibility (history-availability)
-        #:transparent)
-
-(provide (struct-out content/room-create))
-(struct content/room-create (creator)
-        #:transparent)
-
-(provide (struct-out content/room-topic))
-(struct content/room-topic (topic)
-        #:transparent)
+         "credentials.rkt"
+         "urls.rkt"
+         "login.rkt"
+         "power-levels.rkt"
+         "state-structs.rkt")
 
 (provide jsexpr->state)
 (define (jsexpr->state js)
@@ -71,6 +51,9 @@
     [("m.room.topic")
      (content/room-topic
        (state/content/room-topic/topic (hash-ref js 'content #f)))]
+    [("m.room.aliases")
+     (content/room-aliases
+       (state/content/room-aliases/aliases (hash-ref js 'content #f)))]
     [("m.room.power_levels")
      (jsexpr->content/power-levels (hash-ref js 'content #f))]
     [("m.room.history_visibility")
@@ -115,6 +98,10 @@
 (define (state/content/room-topic/topic js)
   (hash-ref js 'topic #f))
 
+(provide state/content/room-aliases/aliases)
+(define (state/content/room-aliases/aliases js)
+  (hash-ref js 'aliases #f))
+
 (provide state/age)
 (define (state/age js)
   (hash-ref js 'age #f))
@@ -135,4 +122,26 @@
 (define (state/state-key js)
   (hash-ref js 'state_key #f))
 
-
+(provide set/state/room/id)
+(define (set/state/room/id room-id event content
+                           #:state-key [state-key #f]
+                           #:access-token
+                           [token (user-info/access-token (get/user-info))])
+  (define-values
+    (response headers input-port)
+    (http-sendrecv credentials/host
+                   (if (not state-key)
+                     (format (string-append url/set/state/no-state-key
+                                            "?access_token=~a")
+                             room-id event token)
+                     (format (string-append url/set/state/no-state-key
+                                            "?access_token=~a")
+                             room-id event state-key token))
+                   #:port credentials/port
+                   #:ssl? #t
+                   #:method "PUT"
+                   #:data (jsexpr->string content)
+                   #:headers
+                   (list
+                     "Content-Type: application/x-www-form-urlencoded")))
+  (read-json input-port))

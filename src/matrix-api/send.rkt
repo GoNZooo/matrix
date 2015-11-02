@@ -32,7 +32,7 @@
   (read-json input-port))
 
 (module+ main
-  (require "room.rkt"
+  (require "room-structs.rkt"
            "initial-sync.rkt")
 
   (define rooms (db/read/rooms))
