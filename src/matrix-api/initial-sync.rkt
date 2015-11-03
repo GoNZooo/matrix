@@ -17,6 +17,7 @@
 
 (define user-info (get/user-info))
 
+(provide get/initial-sync)
 (define (get/initial-sync #:token
                           [token (user-info/access-token user-info)]
                           #:host [host credentials/host]
