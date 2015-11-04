@@ -1,8 +1,14 @@
 #lang racket/base
 
-(require db
+(require net/http-client
+         net/uri-codec
+         json
+         db
 
          "db-interface.rkt"
+         "credentials.rkt"
+         "urls.rkt"
+         "login.rkt"
          "messages.rkt"
          "state.rkt")
 
@@ -39,3 +45,23 @@
 (provide room/visibility)
 (define (room/visibility js)
   (hash-ref js 'visibility #f))
+
+(provide room/join/id)
+(define (room/join/id room-id
+                      #:access-token
+                      [token (user-info/access-token (get/user-info))])
+  (define-values
+    (response headers input-port)
+    (http-sendrecv credentials/host
+                   (format (string-append url/join/room/id
+                                          "?access_token=~a")
+                           room-id token)
+                   #:port credentials/port
+                   #:ssl? #t
+                   #:method "POST"
+                   #:data
+                   (jsexpr->string `#hash((room_id . ,room-id)))
+                   #:headers
+                   (list
+                     "Content-Type: application/x-www-form-urlencoded")))
+  (read-json input-port))

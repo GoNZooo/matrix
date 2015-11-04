@@ -1,7 +1,10 @@
 #lang racket/base
 
 (require racket/string
-
+         db
+         
+         "matrix-api/db-interface.rkt"
+         "matrix-api/login.rkt"
          "matrix-api/initial-sync.rkt"
          "matrix-api/room.rkt"
          "matrix-api/send.rkt"
@@ -41,6 +44,27 @@
   (when (allowed-user? uid rid)
     (dispatch/command message)))
 
+(define (inviter? user-id)
+  (call-with-transaction
+    db-conn
+    (lambda ()
+      (= 1
+         (query-maybe-value
+           db-conn
+           "SELECT can_invite FROM inviters WHERE user_id = $1"
+           user-id)))))
+
+(define (handler/m.room.member event)
+  (cond
+    [(and (equal? (event/state-key event)
+                  (user-info/user-id (get/user-info)))
+          (equal? (hash-ref (event/content event)
+                            'membership)
+                  "invite")
+          (inviter? (event/user-id event)))
+     (room/join/id (event/room-id event))]
+    [else (void)]))
+
 (define (handler/not-found message)
   (void message))
 
@@ -49,7 +73,8 @@
                         ".pong!"))
 
 (define dispatch-hash/event
-  `#hash(("m.room.message" . ,handler/m.room.message)))
+  `#hash(("m.room.message" . ,handler/m.room.message)
+         ("m.room.member" . ,handler/m.room.member)))
 
 (define (dispatch/event event)
   (define handler

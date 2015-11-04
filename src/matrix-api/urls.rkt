@@ -25,3 +25,5 @@
 (provide url/get/state)
 (define url/get/state url/set/state/state-key)
 
+(provide url/join/room/id)
+(define url/join/room/id "/_matrix/client/api/v1/rooms/~a/join")
