@@ -1,4 +1,5 @@
 src/matrix-api/credentials.rkt
 src/matrix-api/db-credentials.rkt
+src/authed-users.rkt
 cache/*
 db/*

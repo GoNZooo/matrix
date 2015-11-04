@@ -21,3 +21,7 @@
 
 (provide url/set/state/no-state-key)
 (define url/set/state/no-state-key "/_matrix/client/api/v1/rooms/~a/state/~a")
+
+(provide url/get/state)
+(define url/get/state url/set/state/state-key)
+

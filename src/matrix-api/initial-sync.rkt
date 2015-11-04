@@ -15,11 +15,9 @@
          "presence.rkt"
          "events.rkt")
 
-(define user-info (get/user-info))
-
 (provide get/initial-sync)
 (define (get/initial-sync #:token
-                          [token (user-info/access-token user-info)]
+                          [token (user-info/access-token (get/user-info))]
                           #:host [host credentials/host]
                           #:port [port credentials/port]
                           #:limit [limit "1"]
@@ -34,22 +32,10 @@
                    #:ssl? #t
                    #:method "GET"))
 
-  (define sync-data (jsexpr->initial-sync (read-json input-port)))
+  (define sync-data (read-json input-port))
   (when state-update?
-    (db/set/end (initial-sync-end sync-data)))
+    (db/set/end (initial-sync/end sync-data)))
   sync-data)
-
-(struct initial-sync (end rooms presences receipts)
-        #:transparent)
-
-(provide jsexpr->initial-sync)
-(define (jsexpr->initial-sync js)
-  (initial-sync (initial-sync/end js)
-                (map jsexpr->room
-                     (initial-sync/rooms js))
-                (map jsexpr->presence
-                     (initial-sync/presences js))
-                (initial-sync/receipts js)))
 
 (provide initial-sync/presences)
 (define (initial-sync/presences js)
@@ -70,4 +56,4 @@
 (module+ main
   (require racket/pretty)
   (pretty-print
-    (get/initial-sync #:limit 10)))
+    (get/initial-sync #:limit 25)))

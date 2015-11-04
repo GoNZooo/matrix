@@ -7,20 +7,7 @@
 
          "credentials.rkt"
          "urls.rkt"
-         "login.rkt"
-         "power-levels.rkt"
-         "state-structs.rkt")
-
-(provide jsexpr->state)
-(define (jsexpr->state js)
-  (state (state/type js)
-         (state/age js)
-         (state/user-id js)
-         (state/room-id js)
-         (state/content js) 
-         (state/event-id js)
-         (state/origin-server-ts js)
-         (state/state-key js)))
+         "login.rkt")
 
 (provide state/type)
 (define (state/type js)
@@ -29,38 +16,6 @@
 (provide state/user-id)
 (define (state/user-id js)
   (hash-ref js 'user_id #f))
-
-(provide state/content)
-(define (state/content js)
-  (case (state/type js)
-    [("m.room.join_rules")
-     (content/join-rules
-       (state/content/join-rules/join-rule (hash-ref js 'content #f)))]
-    [("m.room.member")
-     (content/room-member
-       (state/content/room-member/avatar-url (hash-ref js 'content #f))
-       (state/content/room-member/displayname (hash-ref js 'content #f))
-       (state/content/room-member/membership (hash-ref js 'content #f))
-       (state/content/room-member/replaces-state (hash-ref js 'content #f)))]
-    [("m.room.name")
-     (content/room-name
-       (state/content/room-name/name (hash-ref js 'content #f)))]
-    [("m.room.create")
-     (content/room-create
-       (state/content/room-create/creator (hash-ref js 'content #f)))]
-    [("m.room.topic")
-     (content/room-topic
-       (state/content/room-topic/topic (hash-ref js 'content #f)))]
-    [("m.room.aliases")
-     (content/room-aliases
-       (state/content/room-aliases/aliases (hash-ref js 'content #f)))]
-    [("m.room.power_levels")
-     (jsexpr->content/power-levels (hash-ref js 'content #f))]
-    [("m.room.history_visibility")
-     (content/room-topic
-       (state/content/history-visibility/history-visibility
-         (hash-ref js 'content #f)))]
-    [else (hash-ref js 'content #f)]))
 
 (provide state/content/join-rules/join-rule)
 (define (state/content/join-rules/join-rule js)
@@ -123,7 +78,7 @@
   (hash-ref js 'state_key #f))
 
 (provide set/state/room/id)
-(define (set/state/room/id room-id event content
+(define (set/state/room/id room-id event-type content
                            #:state-key [state-key #f]
                            #:access-token
                            [token (user-info/access-token (get/user-info))])
@@ -133,10 +88,10 @@
                    (if (not state-key)
                      (format (string-append url/set/state/no-state-key
                                             "?access_token=~a")
-                             room-id event token)
-                     (format (string-append url/set/state/no-state-key
+                             room-id event-type token)
+                     (format (string-append url/set/state/state-key
                                             "?access_token=~a")
-                             room-id event state-key token))
+                             room-id event-type state-key token))
                    #:port credentials/port
                    #:ssl? #t
                    #:method "PUT"
@@ -145,3 +100,21 @@
                    (list
                      "Content-Type: application/x-www-form-urlencoded")))
   (read-json input-port))
+
+(provide get/state/room/id)
+(define (get/state/room/id room-id event-type
+                           #:state-key [state-key ""]
+                           #:access-token
+                           [token (user-info/access-token (get/user-info))])
+  (define-values
+    (response headers input-port)
+    (http-sendrecv credentials/host
+                   (format (string-append url/get/state
+                                          "?access_token=~a")
+                           room-id event-type state-key token)
+                   #:port credentials/port
+                   #:ssl? #t
+                   #:method "GET"))
+  (read-json input-port))
+
+

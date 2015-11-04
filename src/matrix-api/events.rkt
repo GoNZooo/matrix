@@ -13,6 +13,43 @@
 
 (define user-info (get/user-info))
 
+(provide event/content)
+(define (event/content event)
+  (hash-ref event 'content #f))
+
+(provide event/type)
+(define (event/type event)
+  (hash-ref event 'type #f))
+
+(provide event/event-id)
+(define (event/event-id event)
+  (hash-ref event 'event_id #f))
+
+(provide event/room-id)
+(define (event/room-id event)
+  (hash-ref event 'room_id #f))
+
+(provide event/user-id)
+(define (event/user-id event)
+  (hash-ref event 'user_id #f))
+
+(provide event/prev-content)
+(define (event/prev-content event)
+  (hash-ref event 'prev_content #f))
+
+(provide event/state-key)
+(define (event/state-key event)
+  (hash-ref event 'state_key #f))
+
+(provide event/age)
+(define (event/age js)
+  (hash-ref js 'age #f))
+
+(provide event/origin-server-ts)
+(define (event/origin-server-ts js)
+  (hash-ref js 'origin_server_ts #f))
+
+(provide get/events)
 (define (get/events #:token
                     [token (user-info/access-token user-info)]
                     #:host [host credentials/host]

@@ -9,6 +9,7 @@
          "urls.rkt"
          "login.rkt")
 
+(provide send/room/message/id)
 (define (send/room/message/id room-id message
                               #:token
                               [token (user-info/access-token (get/user-info))])
@@ -30,12 +31,3 @@
                    (list
                      "Content-Type: application/x-www-form-urlencoded")))
   (read-json input-port))
-
-(module+ main
-  (require "room-structs.rkt"
-           "initial-sync.rkt")
-
-  (define rooms (db/read/rooms))
-  rooms
-  (send/room/message/id (room-room-id (car rooms))
-                        "Hejhej. :)"))

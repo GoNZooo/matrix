@@ -29,10 +29,3 @@
                    (list
                      "Content-Type: application/x-www-form-urlencoded")))
   (read-json input-port))
-
-(module+ main
-  (require "room.rkt")
-
-  (define rooms (db/read/rooms))
-  (put/room/alias/id (room-room-id (car rooms))
-                     "#test:severnatazvezda.com"))
