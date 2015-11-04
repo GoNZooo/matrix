@@ -13,12 +13,16 @@
          "matrix-api/events.rkt")
 
 (define (allowed-user? user-id room-id)
-  (equal? "1"
-          (hash-ref (get/state/room/id room-id
-                                       "com.severnatazvezda.apibot.allowed"
-                                       #:state-key (substring user-id 1))
-                    'allowed
-                    #f)))
+  (define flag-value
+    (hash-ref (get/state/room/id room-id
+                                 "com.severnatazvezda.apibot.allowed"
+                                 #:state-key (substring user-id 1))
+              'allowed
+              #f))
+
+  (if (not flag-value)
+    (priv-user? user-id)
+    (equal? "1" flag-value)))
 
 (define (allow-user user-id room-id)
   (set/state/room/id room-id
@@ -53,6 +57,15 @@
            db-conn
            "SELECT can_invite FROM inviters WHERE user_id = $1"
            user-id)))))
+
+(define (priv-user? user-id)
+  (call-with-transaction
+    db-conn
+    (lambda ()
+      (query-maybe-value
+        db-conn
+        "SELECT user_id FROM privusers WHERE user_id = $1"
+        user-id))))
 
 (define (handler/m.room.member event)
   (cond
