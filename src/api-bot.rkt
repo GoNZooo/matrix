@@ -76,4 +76,6 @@
   (main-loop))
 
 (module+ main
+  (define sync-data (get/initial-sync))
+
   (main-loop))
