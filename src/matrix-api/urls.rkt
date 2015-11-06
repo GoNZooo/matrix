@@ -27,3 +27,6 @@
 
 (provide url/join/room/id)
 (define url/join/room/id "/_matrix/client/api/v1/rooms/~a/join")
+
+(provide url/create/room)
+(define url/create/room "/_matrix/client/api/v1/createRoom")

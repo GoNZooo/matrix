@@ -65,3 +65,26 @@
                    (list
                      "Content-Type: application/x-www-form-urlencoded")))
   (read-json input-port))
+
+(provide room/create/private)
+(define (room/create/private users
+                             room-name
+                             #:access-token
+                             [token (user-info/access-token (get/user-info))])
+  (define-values
+    (response headers input-port)
+    (http-sendrecv credentials/host
+                   (format (string-append url/create/room
+                                          "?access_token=~a")
+                           token)
+                   #:port credentials/port
+                   #:ssl? #t
+                   #:method "POST"
+                   #:data
+                   (jsexpr->string `#hash((preset . "private_chat")
+                                          (name . ,room-name)
+                                          (invite . ,users)))
+                   #:headers
+                   (list
+                     "Content-Type: application/x-www-form-urlencoded")))
+  (read-json input-port))

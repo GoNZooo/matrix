@@ -10,7 +10,8 @@
          "matrix-api/send.rkt"
          "matrix-api/state.rkt"
          "matrix-api/messages.rkt"
-         "matrix-api/events.rkt")
+         "matrix-api/events.rkt"
+         "remind.rkt")
 
 (define (allowed-user? user-id room-id)
   (define flag-value
@@ -85,6 +86,31 @@
   (send/room/message/id (event/room-id message)
                         ".pong!"))
 
+(define (command/.invite-me message)
+  (define response (room/create/private `(,(event/user-id message))
+                                        "api-bot PM"))
+  (send/room/message/id (hash-ref response 'room_id)
+                        (format "Hej, ~a!"
+                                (event/user-id message))))
+
+(define (command/.remind message
+                         #:debug? [debug? #f])
+  (define-values (user place datetime text)
+    (parse/remind/parameters message))
+  (if (not user)
+    (send/room/message/id
+      (event/room-id message)
+      (string-append "Usage: .remind user-id|me here|priv "
+                     "dd.MM.yy hh:mm:ss "
+                     "<reminder-text>"))
+    (begin
+      (db/add/reminder user place datetime text)
+      (send/room/message/id (event/room-id message)
+                            (if debug?
+                              (format "Logged reminder: ~a in ~a at ~a -> ~a"
+                                      user place datetime text)
+                              (format "Reminder logged!"))))))
+
 (define dispatch-hash/event
   `#hash(("m.room.message" . ,handler/m.room.message)
          ("m.room.member" . ,handler/m.room.member)))
@@ -97,7 +123,9 @@
   (handler event))
 
 (define dispatch-hash/command
-  `#hash((".ping" . ,command/.ping)))
+  `#hash((".ping" . ,command/.ping)
+         (".invite-me" . ,command/.invite-me)
+         (".remind" . ,command/.remind)))
 
 (define (dispatch/command message)
   (define handler
@@ -110,10 +138,15 @@
 (define (main-loop #:sleep-time [sleep-time 0.5])
   (for-each dispatch/event
             (message/chunks (get/events)))
+  (define reminders (db/get/reminders))
+  (for-each reminder/notify reminders)
+  (db/remove/reminders reminders)
   (sleep sleep-time)
   (main-loop))
 
 (module+ main
   (define sync-data (get/initial-sync))
+
+  ;(db/get/reminders))
 
   (main-loop))
