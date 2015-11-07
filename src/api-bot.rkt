@@ -2,6 +2,7 @@
 
 (require racket/string
          db
+         gregor
          
          "matrix-api/db-interface.rkt"
          "matrix-api/login.rkt"
@@ -136,11 +137,16 @@
   (handler message))
 
 (define (main-loop #:sleep-time [sleep-time 0.5])
-  (for-each dispatch/event
-            (message/chunks (get/events)))
-  (define reminders (db/get/reminders))
-  (for-each reminder/notify reminders)
-  (db/remove/reminders reminders)
+  (with-handlers ([exn:fail:network?
+                    (lambda (exception)
+                      (printf "[~a] Network error: ~a"
+                              (~t (now) "dd.MM.y hh:mm:ss")
+                              exception))])
+                 (for-each dispatch/event
+                           (message/chunks (get/events)))
+                 (define reminders (db/get/reminders))
+                 (for-each reminder/notify reminders)
+                 (db/remove/reminders reminders))
   (sleep sleep-time)
   (main-loop))
 
