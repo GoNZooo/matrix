@@ -140,7 +140,6 @@
   (handler message))
 
 (define (main-loop #:sleep-time [sleep-time 0.5])
-  (logging-thread (thread display-log))
   (with-handlers ([exn:fail:network?
                     (lambda (exception)
                       (printf "[~a] Network error: ~a~n"
@@ -164,4 +163,5 @@
 
   ;(db/get/reminders))
 
+  (logging-thread (thread display-log))
   (main-loop))
