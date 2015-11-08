@@ -11,7 +11,7 @@
 (define (display-log)
   (define thread-message (thread-receive))
   (printf "[~a] ~a~n"
-          (~t (now) "dd.MM.y hh:mm:ss")
+          (~t (now) "dd.MM.y HH:mm:ss")
           thread-message)
   (flush-output (current-output-port))
   (display-log))
