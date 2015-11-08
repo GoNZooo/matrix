@@ -7,7 +7,8 @@
          "matrix-api/db-interface.rkt"
          "matrix-api/send.rkt"
          "matrix-api/room.rkt"
-         "datetime-parsing.rkt")
+         "datetime-parsing.rkt"
+         "log.rkt")
 
 (provide reminder/user)
 (define (reminder/user r)
@@ -68,17 +69,21 @@
 
 (provide reminder/notify)
 (define (reminder/notify reminder)
-  (define place (reminder/place reminder))
-  (send/room/message/id
-    (if (equal? place
+  (define room-id
+    (if (equal? (reminder/place reminder)
                 "priv")
       (hash-ref (room/create/private `(,(reminder/user reminder))
                                      "api-bot reminder")
                 'room_id)
-      place)
-    (format "~a: Reminder - ~a"
-            (reminder/user reminder)
-            (reminder/text reminder))))
+      (reminder/place reminder)))
+
+  (sleep 2)
+  (send/room/message/id room-id
+                        (format "~a: Reminder - ~a"
+                                (reminder/user reminder)
+                                (reminder/text reminder)))
+  (->log (format "-> Sent reminder to ~a."
+                 (reminder/user reminder))))
 
 (provide parse/remind/parameters)
 (define (parse/remind/parameters message)

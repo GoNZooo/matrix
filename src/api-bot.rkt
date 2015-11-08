@@ -12,7 +12,8 @@
          "matrix-api/state.rkt"
          "matrix-api/messages.rkt"
          "matrix-api/events.rkt"
-         "remind.rkt")
+         "remind.rkt"
+         "log.rkt")
 
 (define (allowed-user? user-id room-id)
   (define flag-value
@@ -110,7 +111,9 @@
                             (if debug?
                               (format "Logged reminder: ~a in ~a at ~a -> ~a"
                                       user place datetime text)
-                              (format "Reminder logged!"))))))
+                              (format "Reminder logged!")))
+      (->log (format "<- Reminder logged for ~a by ~a"
+                     user (event/user-id message))))))
 
 (define dispatch-hash/event
   `#hash(("m.room.message" . ,handler/m.room.message)
@@ -137,15 +140,21 @@
   (handler message))
 
 (define (main-loop #:sleep-time [sleep-time 0.5])
+  (logging-thread (thread display-log))
   (with-handlers ([exn:fail:network?
                     (lambda (exception)
-                      (printf "[~a] Network error: ~a"
+                      (printf "[~a] Network error: ~a~n"
                               (~t (now) "dd.MM.y hh:mm:ss")
                               exception))])
                  (for-each dispatch/event
                            (message/chunks (get/events)))
                  (define reminders (db/get/reminders))
-                 (for-each reminder/notify reminders)
+                 (for-each
+                   (lambda (r)
+                     (thread
+                       (lambda ()
+                         (reminder/notify r))))
+                   reminders)
                  (db/remove/reminders reminders))
   (sleep sleep-time)
   (main-loop))
