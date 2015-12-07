@@ -22,13 +22,13 @@
 
 (define (cache/read/user-info [path cache/path/user-info])
   (call-with-input-file path
-                        read))
+    read))
 
 (define (cache/write/user-info data [path cache/path/user-info])
   (call-with-output-file path
-                         (lambda (out)
-                           (write data out))
-                         #:exists 'replace))
+    (lambda (out)
+      (write data out))
+    #:exists 'replace))
 
 (provide user-info/access-token)
 (define (user-info/access-token js)
@@ -47,7 +47,7 @@
                  #:data data
                  #:headers
                  (list
-                   "Content-Type: application/x-www-form-urlencoded")))
+                  "Content-Type: application/x-www-form-urlencoded")))
 
 (define (cached?/user-info)
   (file-exists? cache/path/user-info))
@@ -60,17 +60,17 @@
                        #:cache [cache? #t])
   (if (and cache?
            (cached?/user-info))
-    (cache/read/user-info)
-    (let*-values ([(response headers input-port)
-                   (make-connection host
-                                    port
-                                    (jsexpr->string
-                                      `#hash((type . "m.login.password")
-                                             (user . ,user)
-                                             (password . ,password))))]
-                  [(data) (read-json input-port)])
-      (cache/write/user-info data)
-      data)))
+      (cache/read/user-info)
+      (let*-values ([(response headers input-port)
+                     (make-connection host
+                                      port
+                                      (jsexpr->string
+                                       `#hash((type . "m.login.password")
+                                              (user . ,user)
+                                              (password . ,password))))]
+                    [(data) (read-json input-port)])
+        (cache/write/user-info data)
+        data)))
 
 (module+ main
   (get/user-info))
