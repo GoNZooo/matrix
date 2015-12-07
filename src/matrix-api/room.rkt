@@ -15,16 +15,16 @@
 (provide db/write/room)
 (define (db/write/room room)
   (call-with-transaction
-    db-conn
-    (lambda ()
-      (query-exec
-        db-conn
-        "REPLACE INTO rooms values ($1,$2,$3)"
-        (room/room-id room)
-        (room/membership room)
-        (room/visibility room)))
-    #:option 'immediate
-    #:isolation 'read-uncommitted))
+   db-conn
+   (lambda ()
+     (query-exec
+      db-conn
+      "REPLACE INTO rooms values ($1,$2,$3)"
+      (room/room-id room)
+      (room/membership room)
+      (room/visibility room)))
+   #:option 'immediate
+   #:isolation 'read-uncommitted))
 
 (provide room/room-id)
 (define (room/room-id js)
@@ -63,7 +63,7 @@
                    (jsexpr->string `#hash((room_id . ,room-id)))
                    #:headers
                    (list
-                     "Content-Type: application/x-www-form-urlencoded")))
+                    "Content-Type: application/x-www-form-urlencoded")))
   (read-json input-port))
 
 (provide room/create/private)
@@ -86,5 +86,5 @@
                                           (invite . ,users)))
                    #:headers
                    (list
-                     "Content-Type: application/x-www-form-urlencoded")))
+                    "Content-Type: application/x-www-form-urlencoded")))
   (read-json input-port))
