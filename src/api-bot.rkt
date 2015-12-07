@@ -24,8 +24,8 @@
               #f))
 
   (if (not flag-value)
-    (priv-user? user-id)
-    (equal? "1" flag-value)))
+      (priv-user? user-id)
+      (equal? "1" flag-value)))
 
 (define (allow-user user-id room-id)
   (set/state/room/id room-id
@@ -53,22 +53,22 @@
 
 (define (inviter? user-id)
   (call-with-transaction
-    db-conn
-    (lambda ()
-      (= 1
-         (query-maybe-value
-           db-conn
-           "SELECT can_invite FROM inviters WHERE user_id = $1"
-           user-id)))))
+   db-conn
+   (lambda ()
+     (= 1
+        (query-maybe-value
+         db-conn
+         "SELECT can_invite FROM inviters WHERE user_id = $1"
+         user-id)))))
 
 (define (priv-user? user-id)
   (call-with-transaction
-    db-conn
-    (lambda ()
-      (query-maybe-value
-        db-conn
-        "SELECT user_id FROM privusers WHERE user_id = $1"
-        user-id))))
+   db-conn
+   (lambda ()
+     (query-maybe-value
+      db-conn
+      "SELECT user_id FROM privusers WHERE user_id = $1"
+      user-id))))
 
 (define (handler/m.room.member event)
   (cond
@@ -100,20 +100,20 @@
   (define-values (user place datetime text)
     (parse/remind/parameters message))
   (if (not user)
-    (send/room/message/id
-      (event/room-id message)
-      (string-append "Usage: .remind user-id|me here|priv "
-                     "dd.MM.yy hh:mm:ss "
-                     "<reminder-text>"))
-    (begin
-      (db/add/reminder user place datetime text)
-      (send/room/message/id (event/room-id message)
-                            (if debug?
-                              (format "Logged reminder: ~a in ~a at ~a -> ~a"
-                                      user place datetime text)
-                              (format "Reminder logged!")))
-      (->log (format "<- Reminder logged for ~a by ~a"
-                     user (event/user-id message))))))
+      (send/room/message/id
+       (event/room-id message)
+       (string-append "Usage: .remind user-id|me here|priv "
+                      "dd.MM.yy hh:mm:ss "
+                      "<reminder-text>"))
+      (begin
+        (db/add/reminder user place datetime text)
+        (send/room/message/id (event/room-id message)
+                              (if debug?
+                                  (format "Logged reminder: ~a in ~a at ~a -> ~a"
+                                          user place datetime text)
+                                  (format "Reminder logged!")))
+        (->log (format "<- Reminder logged for ~a by ~a"
+                       user (event/user-id message))))))
 
 (define dispatch-hash/event
   `#hash(("m.room.message" . ,handler/m.room.message)
@@ -141,20 +141,20 @@
 
 (define (main-loop #:sleep-time [sleep-time 0.5])
   (with-handlers ([exn:fail:network?
-                    (lambda (exception)
-                      (printf "[~a] Network error: ~a~n"
-                              (~t (now) "dd.MM.y hh:mm:ss")
-                              exception))])
-                 (for-each dispatch/event
-                           (message/chunks (get/events)))
-                 (define reminders (db/get/reminders))
-                 (for-each
-                   (lambda (r)
-                     (thread
-                       (lambda ()
-                         (reminder/notify r))))
-                   reminders)
-                 (db/remove/reminders reminders))
+                   (lambda (exception)
+                     (printf "[~a] Network error: ~a~n"
+                             (~t (now) "dd.MM.y hh:mm:ss")
+                             exception))])
+    (for-each dispatch/event
+              (message/chunks (get/events)))
+    (define reminders (db/get/reminders))
+    (for-each
+     (lambda (r)
+       (thread
+        (lambda ()
+          (reminder/notify r))))
+     reminders)
+    (db/remove/reminders reminders))
   (sleep sleep-time)
   (main-loop))
 
