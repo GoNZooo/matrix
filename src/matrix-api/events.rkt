@@ -76,21 +76,21 @@
 (provide db/get/end)
 (define (db/get/end)
   (call-with-transaction
-    db-conn
-    (lambda ()
-      (query-maybe-value db-conn "SELECT key FROM end"))))
+   db-conn
+   (lambda ()
+     (query-maybe-value db-conn "SELECT key FROM end"))))
 
 (provide db/set/end)
 (define (db/set/end key)
   (call-with-transaction
-    db-conn
-    (lambda ()
-      (query-exec db-conn "UPDATE end SET key = $1" key))
-    #:option 'immediate))
+   db-conn
+   (lambda ()
+     (query-exec db-conn "UPDATE end SET key = $1" key))
+   #:option 'immediate))
 
 (module+ main
   (require racket/pretty)
 
   (pretty-print 
-    (get/events)))
+   (get/events)))
 
