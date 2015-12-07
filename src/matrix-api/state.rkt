@@ -86,19 +86,19 @@
     (response headers input-port)
     (http-sendrecv credentials/host
                    (if (not state-key)
-                     (format (string-append url/set/state/no-state-key
-                                            "?access_token=~a")
-                             room-id event-type token)
-                     (format (string-append url/set/state/state-key
-                                            "?access_token=~a")
-                             room-id event-type state-key token))
+                       (format (string-append url/set/state/no-state-key
+                                              "?access_token=~a")
+                               room-id event-type token)
+                       (format (string-append url/set/state/state-key
+                                              "?access_token=~a")
+                               room-id event-type state-key token))
                    #:port credentials/port
                    #:ssl? #t
                    #:method "PUT"
                    #:data (jsexpr->string content)
                    #:headers
                    (list
-                     "Content-Type: application/x-www-form-urlencoded")))
+                    "Content-Type: application/x-www-form-urlencoded")))
   (read-json input-port))
 
 (provide get/state/room/id)
