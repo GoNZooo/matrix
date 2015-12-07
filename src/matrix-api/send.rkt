@@ -25,9 +25,9 @@
                    #:method "POST"
                    #:data
                    (jsexpr->string
-                     `#hash((body . ,message)
-                            (msgtype . "m.text")))
+                    `#hash((body . ,message)
+                           (msgtype . "m.text")))
                    #:headers
                    (list
-                     "Content-Type: application/x-www-form-urlencoded")))
+                    "Content-Type: application/x-www-form-urlencoded")))
   (read-json input-port))
