@@ -24,8 +24,8 @@
                    #:method "PUT"
                    #:data
                    (jsexpr->string
-                     `#hash((room_id . ,room-id)))
+                    `#hash((room_id . ,room-id)))
                    #:headers
                    (list
-                     "Content-Type: application/x-www-form-urlencoded")))
+                    "Content-Type: application/x-www-form-urlencoded")))
   (read-json input-port))
